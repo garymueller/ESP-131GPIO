@@ -5,6 +5,7 @@
 #include <E131.h> // Copyright (c) 2015 Shelby Merrick http://www.forkineye.com
 
 // ***** USER SETUP STUFF *****
+const char hostname[] = "GaryRelayTest";
 const char ssid[] = "MYSSID"; // replace with your SSID.
 const char passphrase[] = "12345678"; // replace with your passphrase.
 
@@ -33,6 +34,7 @@ Serial.begin(115200);
     digitalWrite(channels[i], LOW);
   }
 
+  WiFi.hostname(hostname);
 /* Choose one to begin listening for E1.31 data */
 //e131.begin(ssid, passphrase, ip, netmask, gateway, dns); /* via Unicast on the default port */
 e131.beginMulticast(ssid, passphrase, universe, ip, netmask, gateway, dns); /* via Multicast with static IP Address */
