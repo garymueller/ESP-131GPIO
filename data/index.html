@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<title>%HOSTNAME%</title>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {font-family: Arial;}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #Fbb;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .1s;
+  transition: .1s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .1s;
+  transition: .1s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%%;
+}
+</style>
+</head>
+<body>
+
+<h2>%HOSTNAME%</h2>
+
+<div class="tab">
+  <button class="tablinks" onclick="openTab(event, 'Status')">Status</button>
+  <button class="tablinks" onclick="openTab(event, 'Config')">Config</button>
+  <button class="tablinks" onclick="openTab(event, 'Test')">Test</button>
+</div>
+
+<div id="Status" class="tabcontent">
+<h4>Network Status</h4>
+<hr>
+<ul>
+  <li><b>SSID:</b> %SSID%</li>
+  <li><b>Hostname:</b> %HOSTNAME%</li>
+  <li><b>IP:</b> %IP%</li>
+  <li><b>Mac:</b> %MAC%</li>
+  <li><b>RSSI:</b> %RSSI%</li>
+  <li><b>Free Heap:</b> %HEAP%</li>
+  <li><b>Up Time:</b> %UPTIME%</li>
+</ul>
+
+<h4>E1.31 Status</h4>
+<hr>
+<ul>
+  <li><b>Universe</b> %UNIVERSE%</li>
+  <li><b>Total Packets</b> %PACKETS%</li>
+  <li><b>Paket Errore</b> %PACKET_ERR%</li>
+  <li><b>Last IP</b> %LAST_IP%</li>
+</ul>
+</div>
+
+<div id="Config" class="tabcontent">
+  <form action="/action_page.php">
+  
+    <h4>Network</h4>
+	
+	<label for="HostName">HostName:</label>
+    <input type="text" id="HostName" name="HostName">
+	<br><br>
+	<label for="SSID">SSID:</label>
+    <input type="text" id="SSID" name="SSID">
+	<br><br>
+	<label for="pwd">Password:</label>
+    <input type="password" id="pwd" name="pwd">
+	<br><br>
+  
+    <h4>E1.31</h4>
+    <hr>
+
+    <label>Multicast:</label>
+    <input type="checkbox" onclick="document.getElementById('universe_label').hidden = !this.checked;">
+    <br><br>
+	
+	<div id="universe_label">
+      <label for="universe">Universe:</label>
+      <input type="number" id="universe" name="universe" min="1">
+      <br><br>
+    </div>
+	
+    <h4>MQTT</h4>
+    <hr>
+    
+    <input type="submit" value="Submit">
+  </form>
+</div>
+
+<div id="Test" class="tabcontent">
+  
+  %RELAYS%
+ 
+</div>
+
+<script>
+function openTab(evt, Tab) {
+  var i, tabcontent, tablinks;
+  
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  
+  document.getElementById(Tab).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+</script>
+   
+</body>
+</html> 
