@@ -107,8 +107,8 @@ e131.beginMulticast(ssid, passphrase, universe); /* via Multicast with DHCP IP A
       Serial.println("SetRelay - Index out of range");
       return;
     }
-    
     digitalWrite(channels[relay], (request->getParam("checked")->value() == "true") ? HIGH : LOW);
+    request->send(200);
   });
 
   // Start server
