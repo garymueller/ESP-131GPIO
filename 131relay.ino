@@ -45,7 +45,23 @@ String processor(const String& var)
   } else if (var == "HEAP") {
     return (String)ESP.getFreeHeap();
   } else if (var == "UPTIME") {
-    return (String)millis();
+    long day = 86400000; // 86400000 milliseconds in a day
+    long hour = 3600000; // 3600000 milliseconds in an hour
+    long minute = 60000; // 60000 milliseconds in a minute
+    long second =  1000; // 1000 milliseconds in a second
+    long timeNow = millis();
+   
+    int days = timeNow / day ;                                //number of days
+    int hours = (timeNow % day) / hour;                       //the remainder from days division (in milliseconds) divided by hours, this gives the full hours
+    int minutes = ((timeNow % day) % hour) / minute ;         //and so on...
+    int seconds = (((timeNow % day) % hour) % minute) / second;
+
+    String uptime;
+    uptime += String(days) + " days, ";
+    uptime += String(hours) + ":";
+    uptime += String(minutes) + ":";
+    uptime += String(seconds);
+    return uptime;
   } else if (var == "UNIVERSE") {
     return "";
   } else if (var == "PACKETS") {
