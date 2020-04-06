@@ -138,37 +138,37 @@ input:checked + .slider:before {
 </div>
 
 <div id="Config" class="tabcontent">
-  <form action="/action_page.php">
+  <form action="SaveConfig" method="post">
   
     <h4>Network</h4>
 	
-	<label for="HostName">HostName:</label>
-    <input type="text" id="HostName" name="HostName">
+	<label for="hostname">HostName:</label>
+    <input type="text" id="hostname" name="hostname" value="%CONFIG_HOSTNAME%">
 	<br><br>
-	<label for="SSID">SSID:</label>
-    <input type="text" id="SSID" name="SSID">
+	<label for="ssid">SSID:</label>
+    <input type="text" id="ssid" name="ssid" value="%CONFIG_SSID%">
 	<br><br>
-	<label for="pwd">Password:</label>
-    <input type="password" id="pwd" name="pwd">
+	<label for="password">Password:</label>
+    <input type="password" id="password" name="password" value="%CONFIG_PASSWORD%">
 	<br><br>
   
     <h4>E1.31</h4>
     <hr>
 
     <label>Multicast:</label>
-    <input type="checkbox" onclick="document.getElementById('universe_label').hidden = !this.checked;">
+    <input type="checkbox" id="multicast" name="multicast" %CONFIG_MULTICAST% onclick="document.getElementById('universe_label').hidden = !this.checked;">
     <br><br>
 	
 	<div id="universe_label">
       <label for="universe">Universe:</label>
-      <input type="number" id="universe" name="universe" min="1">
+      <input type="number" id="universe" name="universe" min="1" value="%CONFIG_UNIVERSE%">
       <br><br>
     </div>
 	
     <h4>MQTT</h4>
     <hr>
     
-    <input type="submit" value="Submit">
+    <input type="submit" value="Submit" >
   </form>
 </div>
 
