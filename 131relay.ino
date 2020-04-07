@@ -7,27 +7,26 @@
 #include <FS.h>
 #include <ArduinoJson.h>
 
-String CONFIG_FILE = "Config.json";
-
 // ***** USER SETUP STUFF *****
 String ssid = "SSID"; // replace with your SSID.
 String password = "Password"; // replace with your password.
 
+String CONFIG_FILE = "Config.json";
 AsyncWebServer server(80);
 //AsyncDNSServer dns;
-
 StaticJsonDocument<2048> Config;
 
-const int universe = 12; // this sets the universe number you are using.
 //The IP setup is only required if you are using Unicast and/or you want a static IP for multicast.
 //In multicast this IP is only for network connectivity not multicast data
-IPAddress ip (192,168,1,222); // xx,xx,xx,xx
-IPAddress netmask (255,255,255,0); //255,255,255,0 is common
-IPAddress gateway (192,168,1,1); // xx,xx,xx,xx normally your router / access piont IP address
-IPAddress dns (192,168,1,1); // // xx,xx,xx,xx normally your router / access point IP address
+//IPAddress ip (192,168,1,222); // xx,xx,xx,xx
+//IPAddress netmask (255,255,255,0); //255,255,255,0 is common
+//IPAddress gateway (192,168,1,1); // xx,xx,xx,xx normally your router / access piont IP address
+//IPAddress dns (192,168,1,1); // // xx,xx,xx,xx normally your router / access point IP address
 
-// this sets the pin numbers to use as outputs.
+// Board Pin Definitions
 //for Wemos D1 R1 pins are 16,5,4,14,12,13,0,2
+//#define MAX_CHANNELS 8
+//int channels[MAX_CHANNELS] = {16,5,4,14,12,13,0,2};
 //for Wemos D1 R2 pins are 16,5,4,0,2,14,12,13
 #define MAX_CHANNELS 8
 int channels[MAX_CHANNELS] = {16,5,4,0,2,14,12,13};
@@ -162,6 +161,17 @@ String processor(const String& var)
     return Config["network"]["ssid"];
   } else if (var == "CONFIG_PASSWORD") {
     return Config["network"]["password"];
+  } else if (var == "CONFIG_STATIC") {
+    if(Config["network"]["static"].as<bool>())
+      return "checked";
+     else
+      return "";
+  } else if (var == "CONFIG_STATIC_IP") {
+    return Config["network"]["static_ip"];
+  } else if (var == "CONFIG_STATIC_NETMASK") {
+    return Config["network"]["static_netmask"];
+  } else if (var == "CONFIG_STATIC_GATEWAY") {
+    return Config["network"]["static_gateway"];
   } else if (var == "CONFIG_MULTICAST") {
     if(Config["E131"]["multicast"].as<bool>())
       return "checked";
@@ -191,6 +201,10 @@ bool LoadConfig()
     Config["network"]["hostname"] = "esps-" + String(ESP.getChipId(), HEX);
     Config["network"]["ssid"] = ssid;
     Config["network"]["password"] = password;
+    Config["network"]["static"] = "false";
+    Config["network"]["static_ip"] = "192.168.1.100";
+    Config["network"]["static_netmask"] = "255.255.255.0";
+    Config["network"]["static_gateway"] = "192.168.1.1";
 
     Config["E131"]["multicast"] = "true";
     Config["E131"]["universe"] = 1;
@@ -215,12 +229,20 @@ void SaveConfig(AsyncWebServerRequest* request)
 
   //Validate Config
 
-  Config["network"]["hostname"] = request->getParam("hostname",true)->value().c_str();
-  Config["network"]["ssid"] = request->getParam("ssid",true)->value().c_str();
-  Config["network"]["password"] = request->getParam("password",true)->value().c_str();
+  Config["network"]["hostname"] = request->getParam("hostname",true)->value();
+  Config["network"]["ssid"] = request->getParam("ssid",true)->value();
+  Config["network"]["password"] = request->getParam("password",true)->value();
+  //checkbox status isnt always included if toggled off
+  Config["network"]["static"] = 
+    (request->hasParam("static",true) && (request->getParam("static",true)->value() == "on"));
+  Config["network"]["static_ip"] = request->getParam("static_ip",true)->value();
+  Config["network"]["static_netmask"] = request->getParam("static_netmask",true)->value();
+  Config["network"]["static_gateway"] = request->getParam("static_gateway",true)->value();
 
-  Config["E131"]["multicast"] = (request->getParam("multicast",true)->value() == "on") ? true : false;
-  Config["E131"]["universe"] = request->getParam("universe",true)->value().toInt();
+  //checkbox status isnt always included if toggled off
+  Config["E131"]["multicast"] = 
+    (request->hasParam("multicast",true) && (request->getParam("multicast",true)->value() == "on"));
+  Config["E131"]["universe"] = request->getParam("universe",true)->value();
 
   File file = SPIFFS.open(CONFIG_FILE, "w");
   if(file) {

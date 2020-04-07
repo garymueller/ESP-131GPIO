@@ -145,12 +145,35 @@ input:checked + .slider:before {
 	<label for="hostname">HostName:</label>
     <input type="text" id="hostname" name="hostname" value="%CONFIG_HOSTNAME%">
 	<br><br>
+	
 	<label for="ssid">SSID:</label>
     <input type="text" id="ssid" name="ssid" value="%CONFIG_SSID%">
 	<br><br>
+	
 	<label for="password">Password:</label>
     <input type="password" id="password" name="password" value="%CONFIG_PASSWORD%">
 	<br><br>
+  
+    <label>Static:</label>
+    <input type="checkbox" id="static" name="static" %CONFIG_STATIC% onclick="document.getElementById('static_section').hidden = !this.checked;">
+    <br><br>
+	
+	<div id="static_section">
+	
+      <label for="static_ip">IP:</label>
+      <input type="text" id="static_ip" name="static_ip" title="Static IP Address" value="%CONFIG_STATIC_IP%">
+      <br><br>
+	  
+	  <label for="static_netmask">Netmask:</label>
+      <input type="text" id="static_netmask" name="static_netmask" title="Static Netmask" value="%CONFIG_STATIC_NETMASK%">
+      <br><br>
+	  
+	  <label for="static_gateway">Gateway:</label>
+      <input type="text" id="static_gateway" name="static_gateway" title="Static Gateway" value="%CONFIG_STATIC_GATEWAY%">
+      <br><br>
+	  
+    </div>
+	
   
     <h4>E1.31</h4>
     <hr>
