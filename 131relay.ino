@@ -4,6 +4,7 @@
 #include <ESP8266WiFi.h>
 #include <E131.h> // Copyright (c) 2015 Shelby Merrick http://www.forkineye.com
 #include <ESPAsyncWebServer.h>
+#include <DNSServer.h>
 #include <FS.h>
 #include <ArduinoJson.h>
 
@@ -13,15 +14,9 @@ String password = "Password"; // replace with your password.
 
 String CONFIG_FILE = "Config.json";
 AsyncWebServer server(80);
-//AsyncDNSServer dns;
-StaticJsonDocument<2048> Config;
+DNSServer dnsServer;
 
-//The IP setup is only required if you are using Unicast and/or you want a static IP for multicast.
-//In multicast this IP is only for network connectivity not multicast data
-//IPAddress ip (192,168,1,222); // xx,xx,xx,xx
-//IPAddress netmask (255,255,255,0); //255,255,255,0 is common
-//IPAddress gateway (192,168,1,1); // xx,xx,xx,xx normally your router / access piont IP address
-//IPAddress dns (192,168,1,1); // // xx,xx,xx,xx normally your router / access point IP address
+StaticJsonDocument<2048> Config;
 
 // Board Pin Definitions
 //for Wemos D1 R1 pins are 16,5,4,14,12,13,0,2
@@ -37,7 +32,9 @@ E131 e131;
 String processor(const String& var);
 bool LoadConfig();
 void SaveConfig(AsyncWebServerRequest* request);
-
+void InitWifi();
+void Init131();
+void InitWeb();
 
 /*
  * Sets up the initial state and starts sockets
@@ -45,57 +42,40 @@ void SaveConfig(AsyncWebServerRequest* request);
 void setup() {
   Serial.begin(115200);
 
-  LoadConfig();
-
   //initialize GPIO pins
   for(int i = 0; i < MAX_CHANNELS; ++i)  {
     pinMode(channels[i], OUTPUT);
     digitalWrite(channels[i], LOW);
   }
+  
+  LoadConfig();
 
-  WiFi.hostname(Config["network"]["hostname"].as<const char*>());
-/* Choose one to begin listening for E1.31 data */
-//e131.begin(ssid, passphrase);
-//e131.begin(ssid, passphrase, ip, netmask, gateway, dns); /* via Unicast on the default port */
-//e131.beginMulticast(ssid, passphrase, universe, ip, netmask, gateway, dns); /* via Multicast with static IP Address */
-e131.beginMulticast(Config["network"]["ssid"], Config["network"]["password"], Config["E131"]["universe"]); /* via Multicast with DHCP IP Address */
+  InitWifi();
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/index.html", String(), false, processor);
-  });
-  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/favicon.png", "image/png");
-  });
-  server.on("/SaveConfig", HTTP_POST, [](AsyncWebServerRequest *request){
-    SaveConfig(request);
-  });
-  server.on("/SetRelay", HTTP_GET, [](AsyncWebServerRequest *request){
-    int relay = request->getParam("relay")->value().toInt();
-    if(relay<0 || relay >= MAX_CHANNELS) {
-      Serial.println("SetRelay - Index out of range");
-      return;
-    }
-    digitalWrite(channels[relay], (request->getParam("checked")->value() == "true") ? HIGH : LOW);
-    request->send(200);
-  });
+  Init131();
 
-  // Start server
-  server.begin();
+  InitWeb();
 }
 
 /*
  * Main Event Loop
  */
 void loop() {
+
+  if(WiFi.getMode() == WIFI_AP) {
+    dnsServer.processNextRequest();
+  };
+  
   /* Parse a packet */
   uint16_t num_channels = e131.parsePacket();
 
   /* Process channel data if we have it */
   if (num_channels) {
-    Serial.println("we have data");
     for(int i = 0;i < MAX_CHANNELS; ++i) {
       digitalWrite(channels[i], (e131.data[i] > 127) ? HIGH : LOW);
+      Serial.printf("%d : %d ; ",i,(e131.data[i] > 127) ? HIGH : LOW);
     }
+    Serial.println("");
   }//end we have data
 } // end void loop
 
@@ -161,6 +141,11 @@ String processor(const String& var)
     return Config["network"]["ssid"];
   } else if (var == "CONFIG_PASSWORD") {
     return Config["network"]["password"];
+  } else if (var == "CONFIG_AP") {
+    if(Config["network"]["access_point"].as<bool>())
+      return "checked";
+     else
+      return "";
   } else if (var == "CONFIG_STATIC") {
     if(Config["network"]["static"].as<bool>())
       return "checked";
@@ -201,11 +186,12 @@ bool LoadConfig()
     Config["network"]["hostname"] = "esps-" + String(ESP.getChipId(), HEX);
     Config["network"]["ssid"] = ssid;
     Config["network"]["password"] = password;
-    Config["network"]["static"] = "false";
+    Config["network"]["static"] = false;
     Config["network"]["static_ip"] = "192.168.1.100";
     Config["network"]["static_netmask"] = "255.255.255.0";
     Config["network"]["static_gateway"] = "192.168.1.1";
-
+    Config["network"]["access_point"] = true;
+    
     Config["E131"]["multicast"] = "true";
     Config["E131"]["universe"] = 1;
     
@@ -238,7 +224,9 @@ void SaveConfig(AsyncWebServerRequest* request)
   Config["network"]["static_ip"] = request->getParam("static_ip",true)->value();
   Config["network"]["static_netmask"] = request->getParam("static_netmask",true)->value();
   Config["network"]["static_gateway"] = request->getParam("static_gateway",true)->value();
-
+  Config["network"]["access_point"] = 
+    (request->hasParam("access_point",true) && (request->getParam("access_point",true)->value() == "on"));
+  
   //checkbox status isnt always included if toggled off
   Config["E131"]["multicast"] = 
     (request->hasParam("multicast",true) && (request->getParam("multicast",true)->value() == "on"));
@@ -252,4 +240,91 @@ void SaveConfig(AsyncWebServerRequest* request)
 
   request->send(200);
   ESP.restart();
+}
+
+/*
+ * Initialiaze Wifi (DHCP/STATIC and Access Point)
+ */
+void InitWifi()
+{
+  // Switch to station mode and disconnect just in case
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  
+  WiFi.hostname(Config["network"]["hostname"].as<const char*>());
+
+  //configure Static/DHCP
+  if(Config["network"]["static"].as<bool>()) {
+    IPAddress IP; IP.fromString(Config["network"]["static_ip"].as<String>());
+    IPAddress Netmask; Netmask.fromString(Config["network"]["static_netmask"].as<String>());
+    IPAddress Gateway; Gateway.fromString(Config["network"]["static_gateway"].as<String>());
+
+    if(WiFi.config(IP, Netmask, Gateway)) {
+      Serial.println("Successfully configured static IP");
+    } else {
+      Serial.println("Failed to configure static IP");
+    }
+  } else {
+    Serial.println("Connecting with DHCP");
+  }
+
+  //Connect
+  int Timeout = 15000;
+  WiFi.begin(Config["network"]["ssid"].as<String>(), Config["network"]["password"].as<String>());
+  if(WiFi.waitForConnectResult(Timeout) != WL_CONNECTED) {
+    if(true || Config["network"]["access_point"].as<bool>()) {
+      Serial.println("*** FAILED TO ASSOCIATE WITH AP, GOING SOFTAP ***");
+      WiFi.mode(WIFI_AP);
+      WiFi.softAP(Config["network"]["hostname"].as<String>());
+      dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+      dnsServer.start(53, "*", WiFi.softAPIP());
+      //Serial.printf("SoftAPIP %s", WiFi.softAPIP());
+      //ourSubnetMask = IPAddress(255,255,255,0);
+    } else {
+      Serial.println(F("*** FAILED TO ASSOCIATE WITH AP, REBOOTING ***"));
+      ESP.restart();
+    }
+  } else {
+    Serial.printf("Connected as %s\n",WiFi.localIP().toString().c_str());
+  }
+
+  WiFi.printDiag(Serial);
+}
+
+void Init131()
+{
+  if(Config["E131"]["multicast"].as<bool>()) {
+    e131.begin(E131_MULTICAST, Config["E131"]["universe"]);
+  } else {
+    e131.begin(E131_UNICAST);
+  }
+}
+
+void InitWeb()
+{
+  //enables redirect to /index.html on AP connection
+  server.onNotFound([](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/index.html", String(), false, processor);
+  });
+  //server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+  //  request->send(SPIFFS, "/index.html", String(), false, processor);
+  //});
+
+  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/favicon.png", "image/png");
+  });
+  server.on("/SaveConfig", HTTP_POST, [](AsyncWebServerRequest *request){
+    SaveConfig(request);
+  });
+  server.on("/SetRelay", HTTP_GET, [](AsyncWebServerRequest *request){
+    int relay = request->getParam("relay")->value().toInt();
+    if(relay<0 || relay >= MAX_CHANNELS) {
+      Serial.println("SetRelay - Index out of range");
+      return;
+    }
+    digitalWrite(channels[relay], (request->getParam("checked")->value() == "true") ? HIGH : LOW);
+    request->send(200);
+  });
+
+  server.begin();
 }

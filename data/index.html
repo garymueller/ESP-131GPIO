@@ -154,6 +154,10 @@ input:checked + .slider:before {
     <input type="password" id="password" name="password" value="%CONFIG_PASSWORD%">
 	<br><br>
   
+    <label>Access Point Fallback:</label>
+    <input type="checkbox" id="access_point" name="access_point" %CONFIG_AP% title="Option will allow to fall back to access point mode in case of WIFI connection failure">
+    <br><br>
+	
     <label>Static:</label>
     <input type="checkbox" id="static" name="static" %CONFIG_STATIC% onclick="document.getElementById('static_section').hidden = !this.checked;">
     <br><br>
