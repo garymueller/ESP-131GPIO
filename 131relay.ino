@@ -15,8 +15,8 @@ String password = "Password"; // replace with your password.
 String CONFIG_FILE = "Config.json";
 AsyncWebServer server(80);
 DNSServer dnsServer;
-
 StaticJsonDocument<2048> Config;
+E131 e131;
 
 // Board Pin Definitions
 //for Wemos D1 R1 pins are 16,5,4,14,12,13,0,2
@@ -26,12 +26,12 @@ StaticJsonDocument<2048> Config;
 #define MAX_CHANNELS 8
 int channels[MAX_CHANNELS] = {16,5,4,0,2,14,12,13};
 
-E131 e131;
-
 //Forward Declarations
 String processor(const String& var);
+
 bool LoadConfig();
 void SaveConfig(AsyncWebServerRequest* request);
+
 void InitWifi();
 void Init131();
 void InitWeb();
@@ -90,8 +90,12 @@ String processor(const String& var)
     return (String)WiFi.SSID();
   } else if (var == "HOSTNAME") {
     return (String)WiFi.hostname();
-  } else if (var == "IP") {
-    return WiFi.localIP().toString();
+  } else if (var == "IP") {  
+    if(WiFi.getMode() == WIFI_AP) {
+      return WiFi.softAPIP().toString();
+    } else {
+      return WiFi.localIP().toString();
+    }
   } else if (var == "MAC") {
     return (String)WiFi.macAddress();
   } else if (var == "RSSI") {
