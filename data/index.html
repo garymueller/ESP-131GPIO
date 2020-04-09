@@ -222,6 +222,15 @@ function openTab(evt, Tab) {
   document.getElementById(Tab).style.display = "block";
   evt.currentTarget.className += " active";
 }
+
+document.addEventListener( "DOMContentLoaded", function(){
+    document.removeEventListener( "DOMContentLoaded", arguments.callee, false );
+    openTab(event, 'Config');
+	document.getElementById("static").onclick();
+	document.getElementById("multicast").onclick();
+}, false );
+
+
 </script>
    
 </body>
