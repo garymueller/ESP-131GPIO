@@ -316,7 +316,11 @@ String WebReplace(const String& var)
     for(int i = 0; i < MAX_CHANNELS; ++i) {
       Relays += "<label>Relay "+String(i+1)+"</label>";
       Relays += "  <label class=\"switch\">";
-      Relays += "  <input type=\"checkbox\" onclick=\"fetch('SetRelay?relay="+String(i)+"&checked='+this.checked);\">";
+      Relays += "  <input type=\"checkbox\" ";
+      if(digitalRead(channels[i]) == HIGH) {
+        Relays += "checked";
+      }
+      Relays += " onclick=\"fetch('SetRelay?relay="+String(i)+"&checked='+this.checked);\">";
       Relays += "  <span class=\"slider round\"></span>";
       Relays += "</label>";
       Relays += "<br><br>";
