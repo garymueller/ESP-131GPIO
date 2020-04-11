@@ -36,3 +36,11 @@ Download and install the above build environments and libraries.  The build envi
 1. Plug the arduino into your computers USB. 
 1. Click the upload button to compile and transfer the firmware to the arduino. 
 1. Then select the "ESP8266 sketch data upload" found under the tools menu. This will upload the html to the arduino.
+
+# Acknowledgements
+I wish to thank the following individuals / groups were instrumental into helping make this project.
+* [Shelby Merrick](https://github.com/forkineye)
+  * [ESPixelStick](https://github.com/forkineye/ESPixelStick)
+  * [E131](https://github.com/forkineye/E131)
+* [doityorselfchistmas](http://doityourselfchristmas.com/forums/archive/index.php/t-51293.html)
+* many others with various examples, tutorials, etc.
