@@ -1,12 +1,13 @@
 # ESP-131GPIO
 
-This is arduino firmware that will listen to a E1.31 (sACN) data soure and will drive a boards GPIO pins. The firmware supports ESP8266 and is currently configured to support the WEMOS mini.  This was designed to drive relays for static christmas display lights being driven by Vixen, XLights or other application that outouts a E1.31 data stream. The board supports the following ...
+This is arduino firmware that will listen to a E1.31 (sACN) data soure and will drive a boards GPIO pins. The firmware supports ESP8266 and is currently configured to support the WEMOS mini.  This was designed to drive relays for static christmas display lights being driven by Vixen, XLights or other application that output a E1.31 data stream. The board supports the following ...
 
-* Status page
-* Configuration Page
-  * Network
-  * E131
-* Test Page
+* Web Interface
+  * Status page
+  * Configuration Page
+    * Network
+    * E131
+  * Test Page
 
 * REST API - to set relay states through an external interface
   * /SetRelay?relay=[0-#]&checked=[true|false]
