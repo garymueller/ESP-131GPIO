@@ -236,7 +236,8 @@ document.addEventListener( "DOMContentLoaded", function(){
 var UpdateTimer = setInterval(Update,1000);
 var PageLoadTime = Date.now();
 function Update() {
-  var date = new Date(Date.now()-PageLoadTime+%UPTIME%); 
+  var ESPUptime = %UPTIME%;
+  var date = new Date(Date.now()-PageLoadTime+ESPUptime); 
   
   var str = Math.floor(date.getTime()/86400000) + " days, ";
   str += ("0" + date.getUTCHours()).slice(-2) + ":";
