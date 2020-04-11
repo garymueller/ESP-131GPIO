@@ -17,7 +17,11 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 [WeMos D1 Mini](https://www.amazon.com/IZOKEE-NodeMcu-Internet-Development-Compatible/dp/B076F52NQD)
 
+<img src="images/Wemos.jpg" width="10%" height="10%">
+
 [8-Channel 5V Solid State Relay](https://www.amazon.com/gp/product/B006J4G45G)
+
+<img src="images/Relay.jpg" width="10%" height="10%">
 
 # Build Environments
 
@@ -42,6 +46,12 @@ Download and install the above build environments and libraries.  The build envi
 1. Plug the arduino into your computers USB. 
 1. Click the upload button to compile and transfer the firmware to the arduino. 
 1. Then select the "ESP8266 sketch data upload" found under the tools menu. This will upload the html to the arduino.
+
+# Web Interface
+
+<img src="images/Status.png" width="25%" height="25%">
+<img src="images/Config.png" width="25%" height="25%">
+<img src="images/Test.png" width="25%" height="25%">
 
 # Acknowledgements
 I wish to thank the following individuals / groups were instrumental into helping make this project.
