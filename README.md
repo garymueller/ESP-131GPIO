@@ -13,6 +13,12 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
   * /SetRelay?relay=[0-#]&checked=[true|false]
 * Captive Portal (Optional) - Automatically start the arduino in access point mode if the WiFi settings aren't able to connect.
 
+# Hardware
+
+[WeMos D1 Mini](https://www.amazon.com/IZOKEE-NodeMcu-Internet-Development-Compatible/dp/B076F52NQD)
+
+[8-Channel 5V Solid State Relay](https://www.amazon.com/gp/product/B006J4G45G)
+
 # Build Environments
 
 [Arduino IDE](https://www.arduino.cc/en/main/software)
@@ -26,11 +32,11 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 [Arduino 1.31](https://github.com/forkineye/E131)
 
-# Software / Library Installation
+# Software Installation
 
 Download and install the above build environments and libraries.  The build environments can be installed by downloading and installing the appropriate software.  The libraries can be installed through the ide with manage libraries.
 
-# Installing
+# Firmware Installion
 1. I initially installed the windows CH340 drivers so that it would recognize the arduino chipset. 
 1. The Wemos requires you to jump pins D3 and GND to start the board into programming mode.  
 1. Plug the arduino into your computers USB. 
