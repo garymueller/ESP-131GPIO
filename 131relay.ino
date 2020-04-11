@@ -15,7 +15,7 @@ String password = "Password"; // replace with your password.
 String CONFIG_FILE = "Config.json";
 AsyncWebServer server(80);
 DNSServer dnsServer;
-StaticJsonDocument<2048> Config;
+DynamicJsonDocument Config(1024);
 E131 e131;
 
 // Board Pin Definitions
@@ -27,7 +27,7 @@ E131 e131;
 int channels[MAX_CHANNELS] = {16,5,4,0,2,14,12,13};
 
 //Forward Declarations
-String processor(const String& var);
+String WebReplace(const String& var);
 
 bool LoadConfig();
 void SaveConfig(AsyncWebServerRequest* request);
@@ -62,6 +62,7 @@ void setup() {
  */
 void loop() {
 
+  //used to redirect to index for captive portal in ap mode
   if(WiFi.getMode() == WIFI_AP) {
     dnsServer.processNextRequest();
   };
@@ -80,82 +81,7 @@ void loop() {
 } // end void loop
 
 
-/*
- * processor:
- * Substitutes variables inside of the html
- */
-String processor(const String& var)
-{
-  if (var == "SSID") {
-    return (String)WiFi.SSID();
-  } else if (var == "HOSTNAME") {
-    return (String)WiFi.hostname();
-  } else if (var == "IP") {  
-    if(WiFi.getMode() == WIFI_AP) {
-      return WiFi.softAPIP().toString();
-    } else {
-      return WiFi.localIP().toString();
-    }
-  } else if (var == "MAC") {
-    return (String)WiFi.macAddress();
-  } else if (var == "RSSI") {
-    return (String)WiFi.RSSI();
-  } else if (var == "HEAP") {
-    return (String)ESP.getFreeHeap();
-  } else if (var == "UPTIME") {
-    return String(millis());
-  } else if (var == "UNIVERSE") {
-    return Config["E131"]["universe"];
-  } else if (var == "PACKETS") {
-    return (String)e131.stats.num_packets;
-  } else if (var == "PACKET_ERR") {
-    return (String)e131.stats.packet_errors;
-  } else if (var == "LAST_IP") {
-    return e131.stats.last_clientIP.toString();
-  } else if (var == "RELAYS") {
-    String Relays = "";
-    for(int i = 0; i < MAX_CHANNELS; ++i) {
-      Relays += "<label>Relay "+String(i+1)+"</label>";
-      Relays += "  <label class=\"switch\">";
-      Relays += "  <input type=\"checkbox\" onclick=\"fetch('SetRelay?relay="+String(i)+"&checked='+this.checked);\">";
-      Relays += "  <span class=\"slider round\"></span>";
-      Relays += "</label>";
-      Relays += "<br><br>";
-    }
-    return Relays;   
-  } else if (var == "CONFIG_HOSTNAME") {
-    return Config["network"]["hostname"];
-  } else if (var == "CONFIG_SSID") {
-    return Config["network"]["ssid"];
-  } else if (var == "CONFIG_PASSWORD") {
-    return Config["network"]["password"];
-  } else if (var == "CONFIG_AP") {
-    if(Config["network"]["access_point"].as<bool>())
-      return "checked";
-     else
-      return "";
-  } else if (var == "CONFIG_STATIC") {
-    if(Config["network"]["static"].as<bool>())
-      return "checked";
-     else
-      return "";
-  } else if (var == "CONFIG_STATIC_IP") {
-    return Config["network"]["static_ip"];
-  } else if (var == "CONFIG_STATIC_NETMASK") {
-    return Config["network"]["static_netmask"];
-  } else if (var == "CONFIG_STATIC_GATEWAY") {
-    return Config["network"]["static_gateway"];
-  } else if (var == "CONFIG_MULTICAST") {
-    if(Config["E131"]["multicast"].as<bool>())
-      return "checked";
-     else
-      return "";
-  } else if (var == "CONFIG_UNIVERSE") {
-    return Config["E131"]["universe"];
-  } 
- 
-  return var;
-}
+
 
 /*
  * Loads the config from SPPS into the Config variable
@@ -186,8 +112,9 @@ bool LoadConfig()
   } else {
     Serial.println("Loading Configuration File");
     deserializeJson(Config, file);
-    serializeJson(Config, Serial);
   }
+
+  serializeJson(Config, Serial);Serial.println();
 }
 
 void SaveConfig(AsyncWebServerRequest* request)
@@ -260,14 +187,11 @@ void InitWifi()
   int Timeout = 15000;
   WiFi.begin(Config["network"]["ssid"].as<String>(), Config["network"]["password"].as<String>());
   if(WiFi.waitForConnectResult(Timeout) != WL_CONNECTED) {
-    if(true || Config["network"]["access_point"].as<bool>()) {
+    if(Config["network"]["access_point"].as<bool>()) {
       Serial.println("*** FAILED TO ASSOCIATE WITH AP, GOING SOFTAP ***");
       WiFi.mode(WIFI_AP);
       WiFi.softAP(Config["network"]["hostname"].as<String>());
-      dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
       dnsServer.start(53, "*", WiFi.softAPIP());
-      //Serial.printf("SoftAPIP %s", WiFi.softAPIP());
-      //ourSubnetMask = IPAddress(255,255,255,0);
     } else {
       Serial.println(F("*** FAILED TO ASSOCIATE WITH AP, REBOOTING ***"));
       ESP.restart();
@@ -288,16 +212,20 @@ void Init131()
   }
 }
 
+
+/*
+ * Initializes the webserver
+ */
 void InitWeb()
 {
   //enables redirect to /index.html on AP connection
   server.onNotFound([](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/index.html", String(), false, processor);
+    request->send(SPIFFS, "/index.html", String(), false, WebReplace);
   });
-  //server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-  //  request->send(SPIFFS, "/index.html", String(), false, processor);
-  //});
 
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/index.html", String(), false, WebReplace);
+  });
   server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/favicon.png", "image/png");
   });
@@ -315,4 +243,86 @@ void InitWeb()
   });
 
   server.begin();
+}
+
+/*
+ * WebReplace:
+ * Substitutes variables inside of the html
+ */
+String WebReplace(const String& var)
+{
+  //Status Page
+  if (var == "SSID") {
+    return (String)WiFi.SSID();
+  } else if (var == "HOSTNAME") {
+    return (String)WiFi.hostname();
+  } else if (var == "IP") {  
+    if(WiFi.getMode() == WIFI_AP) {
+      return WiFi.softAPIP().toString();
+    } else {
+      return WiFi.localIP().toString();
+    }
+  } else if (var == "MAC") {
+    return (String)WiFi.macAddress();
+  } else if (var == "RSSI") {
+    return (String)WiFi.RSSI();
+  } else if (var == "HEAP") {
+    return (String)ESP.getFreeHeap();
+  } else if (var == "UPTIME") {
+    return String(millis());
+  } else if (var == "UNIVERSE") {
+    return Config["E131"]["universe"];
+  } else if (var == "PACKETS") {
+    return (String)e131.stats.num_packets;
+  } else if (var == "PACKET_ERR") {
+    return (String)e131.stats.packet_errors;
+  } else if (var == "LAST_IP") {
+    return e131.stats.last_clientIP.toString();
+
+  //Configuration Page   
+  } else if (var == "CONFIG_HOSTNAME") {
+    return Config["network"]["hostname"];
+  } else if (var == "CONFIG_SSID") {
+    return Config["network"]["ssid"];
+  } else if (var == "CONFIG_PASSWORD") {
+    return Config["network"]["password"];
+  } else if (var == "CONFIG_AP") {
+    if(Config["network"]["access_point"].as<bool>())
+      return "checked";
+     else
+      return "";
+  } else if (var == "CONFIG_STATIC") {
+    if(Config["network"]["static"].as<bool>())
+      return "checked";
+     else
+      return "";
+  } else if (var == "CONFIG_STATIC_IP") {
+    return Config["network"]["static_ip"];
+  } else if (var == "CONFIG_STATIC_NETMASK") {
+    return Config["network"]["static_netmask"];
+  } else if (var == "CONFIG_STATIC_GATEWAY") {
+    return Config["network"]["static_gateway"];
+  } else if (var == "CONFIG_MULTICAST") {
+    if(Config["E131"]["multicast"].as<bool>())
+      return "checked";
+     else
+      return "";
+  } else if (var == "CONFIG_UNIVERSE") {
+    return Config["E131"]["universe"];
+  
+  //Relay Page
+  } else if (var == "RELAYS") {
+    String Relays = "";
+    for(int i = 0; i < MAX_CHANNELS; ++i) {
+      Relays += "<label>Relay "+String(i+1)+"</label>";
+      Relays += "  <label class=\"switch\">";
+      Relays += "  <input type=\"checkbox\" onclick=\"fetch('SetRelay?relay="+String(i)+"&checked='+this.checked);\">";
+      Relays += "  <span class=\"slider round\"></span>";
+      Relays += "</label>";
+      Relays += "<br><br>";
+    }
+    return Relays;
+  }
+ 
+  return var;
 }
