@@ -34,7 +34,7 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 [Arduino JSON](https://arduinojson.org/)
 
-[Arduino 1.31](https://github.com/forkineye/E131)
+[ESPAsyncE131](https://github.com/forkineye/ESPAsyncE131)
 
 [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
 
