@@ -2,7 +2,7 @@
 //Spark Fun link https://www.sparkfun.com/products/10878
 
 #include <ESP8266WiFi.h>
-#include <E131.h> // Copyright (c) 2015 Shelby Merrick http://www.forkineye.com
+#include <ESPAsyncE131.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPAsyncDNSServer.h>
 #include <FS.h>
@@ -13,10 +13,10 @@ String ssid = "SSID"; // replace with your SSID.
 String password = "Password"; // replace with your password.
 
 String CONFIG_FILE = "Config.json";
+DynamicJsonDocument Config(1024);
 AsyncWebServer server(80);
 AsyncDNSServer dnsServer;
-DynamicJsonDocument Config(1024);
-E131 e131;
+ESPAsyncE131 e131;
 
 // Board Pin Definitions
 //for Wemos D1 R1 pins are 16,5,4,14,12,13,0,2
@@ -61,19 +61,22 @@ void setup() {
  * Main Event Loop
  */
 void loop() {
+  if(!e131.isEmpty()) {
+    e131_packet_t packet;
+    e131.pull(&packet);     // Pull packet from ring buffer
 
-  /* Parse a packet */
-  uint16_t num_channels = e131.parsePacket();
-
-  /* Process channel data if we have it */
-  if (num_channels) {
-    for(int i = 0;i < MAX_CHANNELS; ++i) {
-      digitalWrite(channels[i], (e131.data[i] > 127) ? HIGH : LOW);
-      Serial.printf("%d : %d ; ",i,(e131.data[i] > 127) ? HIGH : LOW);
+    uint16_t num_channels = htons(packet.property_value_count) - 1;
+    if (num_channels) {
+      for(int i = 0;i < MAX_CHANNELS; ++i) {
+        //seems odd that the array index is 1 based, not zero based ... but it works
+        uint16_t data = packet.property_values[i+1];
+        digitalWrite(channels[i], (data > 127) ? HIGH : LOW);
+        Serial.printf("%d : %d ; ",i,(data > 127) ? HIGH : LOW);
+      }
+      Serial.println("");  
     }
-    Serial.println("");
   }//end we have data
-} // end void loop
+}// end void loop 
 
 
 
