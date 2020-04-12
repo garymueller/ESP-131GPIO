@@ -61,21 +61,18 @@ void setup() {
  * Main Event Loop
  */
 void loop() {
-  if(!e131.isEmpty()) {
-    e131_packet_t packet;
+  e131_packet_t packet;
+  while(!e131.isEmpty()) {
     e131.pull(&packet);     // Pull packet from ring buffer
-
     uint16_t num_channels = htons(packet.property_value_count) - 1;
-    if (num_channels) {
-      for(int i = 0;i < MAX_CHANNELS; ++i) {
-        //seems odd that the array index is 1 based, not zero based ... but it works
-        uint16_t data = packet.property_values[i+1];
-        digitalWrite(channels[i], (data > 127) ? HIGH : LOW);
-        Serial.printf("%d : %d ; ",i,(data > 127) ? HIGH : LOW);
-      }
-      Serial.println("");  
-    }
-  }//end we have data
+    for(int i = 0;i < MAX_CHANNELS && i < num_channels; ++i) {
+      //seems odd that the array index is 1 based, not zero based ... but it works
+      uint16_t data = packet.property_values[i+1];
+      digitalWrite(channels[i], (data > 127) ? HIGH : LOW);
+      //Serial.printf("%d : %d ; ",i,(data > 127) ? HIGH : LOW);
+    }//for loop
+    //Serial.println("");
+  }//! empty
 }// end void loop 
 
 
