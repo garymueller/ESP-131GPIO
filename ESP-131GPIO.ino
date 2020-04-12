@@ -4,7 +4,7 @@
 #include <ESP8266WiFi.h>
 #include <E131.h> // Copyright (c) 2015 Shelby Merrick http://www.forkineye.com
 #include <ESPAsyncWebServer.h>
-#include <DNSServer.h>
+#include <ESPAsyncDNSServer.h>
 #include <FS.h>
 #include <ArduinoJson.h>
 
@@ -14,7 +14,7 @@ String password = "Password"; // replace with your password.
 
 String CONFIG_FILE = "Config.json";
 AsyncWebServer server(80);
-DNSServer dnsServer;
+AsyncDNSServer dnsServer;
 DynamicJsonDocument Config(1024);
 E131 e131;
 
@@ -62,11 +62,6 @@ void setup() {
  */
 void loop() {
 
-  //used to redirect to index for captive portal in ap mode
-  if(WiFi.getMode() == WIFI_AP) {
-    dnsServer.processNextRequest();
-  };
-  
   /* Parse a packet */
   uint16_t num_channels = e131.parsePacket();
 

@@ -36,6 +36,10 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 [Arduino 1.31](https://github.com/forkineye/E131)
 
+[ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
+
+[ESPAsyncDNSServer](https://github.com/devyte/ESPAsyncDNSServer)
+
 # Software Installation
 
 Download and install the above build environments and libraries.  The build environments can be installed by downloading and installing the appropriate software.  The libraries can be installed through the ide with manage libraries.
