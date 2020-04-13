@@ -194,6 +194,20 @@ input:checked + .slider:before {
       <input type="number" id="universe" name="universe" min="1" value="%CONFIG_UNIVERSE%">
       <br><br>
     </div>
+
+    <h4>GPIO</h4>
+    <hr>
+
+	<label>Digital:</label>
+	<input type="checkbox" id="digital" name="digital" %CONFIG_DIGITAL% onclick="document.getElementById('digital_threshold_div').hidden = !this.checked;">
+	<br><br>
+
+	<div class=class="slidecontainer" id="digital_threshold_div">
+      <label for="digital_threshold">Digital Threshold:</label>
+      <input type="range" min="1" max="255" id="digital_threshold" name="digital_threshold" value="%CONFIG_THRESHOLD%" oninput="UpdateThreshold(value)">
+      <output for="digital_threshold" id="thresholdvalue"></output>
+	  <br><br>
+    </div>
     
     <input type="submit" value="Submit" >
   </form>
@@ -225,9 +239,13 @@ function openTab(evt, Tab) {
 
 document.addEventListener( "DOMContentLoaded", function(){
     document.removeEventListener( "DOMContentLoaded", arguments.callee, false );
+	//starts with config tab open
     openTab(event, 'Config');
+	//forces checkbox click logic (ie div closure)
 	document.getElementById("static").onclick();
 	document.getElementById("multicast").onclick();
+	document.getElementById("digital").onclick();
+	document.getElementById("digital_threshold").oninput();
 }, false );
 
 var UpdateTimer = setInterval(Update,1000);
@@ -243,6 +261,9 @@ function Update() {
   document.getElementById("uptime").innerHTML = str;
 }			
 
+function UpdateThreshold(val) {
+	document.querySelector('#thresholdvalue').value = val;
+}
 </script>
    
 </body>

@@ -62,14 +62,22 @@ void setup() {
  */
 void loop() {
   e131_packet_t packet;
+  bool Digital = Config["GPIO"]["digital"].as<bool>();
+  int DigitalThreshold = Config["GPIO"]["digital_threshold"].as<int>();
+
   while(!e131.isEmpty()) {
     e131.pull(&packet);     // Pull packet from ring buffer
     uint16_t num_channels = htons(packet.property_value_count) - 1;
     for(int i = 0;i < MAX_CHANNELS && i < num_channels; ++i) {
       //seems odd that the array index is 1 based, not zero based ... but it works
       uint16_t data = packet.property_values[i+1];
-      digitalWrite(channels[i], (data > 127) ? HIGH : LOW);
-      //Serial.printf("%d : %d ; ",i,(data > 127) ? HIGH : LOW);
+      if(Digital) {
+        digitalWrite(channels[i], (data >= DigitalThreshold) ? HIGH : LOW);
+      } else {
+        //pwm board is 10 bit (1024), data is 256
+        analogWrite(channels[i], data*4);
+      }
+      //Serial.printf("%d:%d:%d; ",i,data,(data >= DigitalThreshold) ? HIGH : LOW);
     }//for loop
     //Serial.println("");
   }//! empty
@@ -103,6 +111,9 @@ bool LoadConfig()
     
     Config["E131"]["multicast"] = "true";
     Config["E131"]["universe"] = 1;
+
+    Config["GPIO"]["digital"] = "true";
+    Config["GPIO"]["digital_threshold"] = 127;
     
   } else {
     Serial.println("Loading Configuration File");
@@ -141,6 +152,11 @@ void SaveConfig(AsyncWebServerRequest* request)
   Config["E131"]["multicast"] = 
     (request->hasParam("multicast",true) && (request->getParam("multicast",true)->value() == "on"));
   Config["E131"]["universe"] = request->getParam("universe",true)->value();
+
+  //checkbox status isnt always included if toggled off
+  Config["GPIO"]["digital"] =
+    (request->hasParam("digital",true) && (request->getParam("digital",true)->value() == "on"));
+  Config["GPIO"]["digital_threshold"] = request->getParam("digital_threshold",true)->value();
 
   File file = SPIFFS.open(CONFIG_FILE, "w");
   if(file) {
@@ -304,6 +320,13 @@ String WebReplace(const String& var)
       return "";
   } else if (var == "CONFIG_UNIVERSE") {
     return Config["E131"]["universe"];
+  } else if (var == "CONFIG_DIGITAL") {
+    if(Config["GPIO"]["digital"].as<bool>())
+      return "checked";
+     else
+      return "";
+  } else if (var == "CONFIG_THRESHOLD") {
+    return Config["GPIO"]["digital_threshold"];
   
   //Relay Page
   } else if (var == "RELAYS") {
