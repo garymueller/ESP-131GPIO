@@ -185,6 +185,10 @@ input:checked + .slider:before {
     <h4>E1.31</h4>
     <hr>
 
+    <label for="channel_start">Channel Offset:</label>
+    <input type="number" id="channel_offset" name="channel_offset" min="0" value="%CONFIG_CHANNEL_OFFSET%">
+    <br><br>
+	  
     <label>Multicast:</label>
     <input type="checkbox" id="multicast" name="multicast" %CONFIG_MULTICAST% onclick="document.getElementById('universe_label').hidden = !this.checked;">
     <br><br>
