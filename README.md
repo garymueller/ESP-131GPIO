@@ -7,11 +7,13 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
   * Configuration Page
     * Network
     * E131
+    * GPIO
   * Test Page
 
 * REST API - to set relay states through an external interface
   * /SetRelay?relay=[0-#]&checked=[true|false]
 * Captive Portal (Optional) - Automatically start the arduino in access point mode if the WiFi settings aren't able to connect.
+* Digital/PWM support
 
 # Hardware
 
@@ -29,6 +31,8 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 [Arduino 8266](https://github.com/esp8266/Arduino)
 
+[arduino-esp8266fs-plugin](https://github.com/esp8266/arduino-esp8266fs-plugin)
+
 # Libraries
 [Arduino WiFi](https://www.arduino.cc/en/Reference/WiFi)
 
@@ -45,11 +49,10 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 Download and install the above build environments and libraries.  The build environments can be installed by downloading and installing the appropriate software.  The libraries can be installed through the ide with manage libraries.
 
 # Firmware Installion
-1. I initially installed the windows CH340 drivers so that it would recognize the arduino chipset. 
 1. The Wemos requires you to jump pins D3 and GND to start the board into programming mode.  
-1. Plug the arduino into your computers USB. 
-1. Click the upload button to compile and transfer the firmware to the arduino. 
-1. Then select the "ESP8266 sketch data upload" found under the tools menu. This will upload the html to the arduino.
+2. Plug the arduino into your computers USB. 
+3. Click the upload button to compile and transfer the firmware to the arduino. 
+4. Then select the "ESP8266 sketch data upload" found under the tools menu. This will upload the data directory (html) to the arduino.
 
 # Web Interface
 
@@ -62,5 +65,5 @@ I wish to thank the following individuals / groups were instrumental into helpin
 * [Shelby Merrick](https://github.com/forkineye)
   * [ESPixelStick](https://github.com/forkineye/ESPixelStick)
   * [E131](https://github.com/forkineye/E131)
-* [doityorselfchistmas](http://doityourselfchristmas.com/forums/archive/index.php/t-51293.html)
+* [doityourselfchistmas](http://doityourselfchristmas.com/forums/archive/index.php/t-51293.html)
 * many others with various examples, tutorials, etc.
