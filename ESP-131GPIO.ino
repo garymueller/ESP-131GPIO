@@ -1,5 +1,4 @@
-// Wemos D1 E1.31 - 8 channel sketch for Sparkfun EL Escudo Dos shield
-//Spark Fun link https://www.sparkfun.com/products/10878
+//https://github.com/garymueller/ESP-131GPIO
 
 #include <ESP8266WiFi.h>
 #include <ESPAsyncE131.h>
@@ -7,6 +6,9 @@
 #include <ESPAsyncDNSServer.h>
 #include <FS.h>
 #include <ArduinoJson.h>
+#include <vector>
+
+using namespace std;
 
 // ***** USER SETUP STUFF *****
 String ssid = "SSID"; // replace with your SSID.
@@ -18,13 +20,10 @@ AsyncWebServer server(80);
 AsyncDNSServer dnsServer;
 ESPAsyncE131 e131;
 
-// Board Pin Definitions
 //for Wemos D1 R1 pins are 16,5,4,14,12,13,0,2
-//#define MAX_CHANNELS 8
-//int channels[MAX_CHANNELS] = {16,5,4,14,12,13,0,2};
+//vector<int> GpioVector{16,5,4,14,12,13,0,2};
 //for Wemos D1 R2 pins are 16,5,4,0,2,14,12,13
-#define MAX_CHANNELS 8
-int channels[MAX_CHANNELS] = {16,5,4,0,2,14,12,13};
+vector<int> GpioVector{16,5,4,0,2,14,12,13};
 
 //Forward Declarations
 String WebReplace(const String& var);
@@ -32,6 +31,7 @@ String WebReplace(const String& var);
 bool LoadConfig();
 void SaveConfig(AsyncWebServerRequest* request);
 
+void InitGpio();
 void InitWifi();
 void Init131();
 void InitWeb();
@@ -40,13 +40,12 @@ void InitWeb();
  * Sets up the initial state and starts sockets
  */
 void setup() {
+  Serial.println("==============================");
+  Serial.println("Start Setup");
+
   Serial.begin(115200);
 
-  //initialize GPIO pins
-  for(int i = 0; i < MAX_CHANNELS; ++i)  {
-    pinMode(channels[i], OUTPUT);
-    digitalWrite(channels[i], LOW);
-  }
+  InitGpio();
   
   LoadConfig();
 
@@ -72,25 +71,36 @@ void loop() {
   while(!e131.isEmpty()) {
     e131.pull(&packet);     // Pull packet from ring buffer
     uint16_t num_channels = htons(packet.property_value_count) - 1;
+    
     for(int GpioIndex = 0, ChannelIndex = ChannelOffset;
-        GpioIndex < MAX_CHANNELS && ChannelIndex < num_channels; 
+        GpioIndex < GpioVector.size() && ChannelIndex < num_channels; 
         ++GpioIndex, ++ChannelIndex) {
-      //seems odd that the array index is 1 based, not zero based ... but it works
+      
       uint16_t data = packet.property_values[ChannelIndex+1];
       if(Digital) {
-        digitalWrite(channels[GpioIndex], (data >= DigitalThreshold) ? HIGH : LOW);
+        digitalWrite(GpioVector[GpioIndex], (data >= DigitalThreshold) ? HIGH : LOW);
       } else {
         //pwm board is 10 bit (1024), data is 256
-        analogWrite(channels[GpioIndex], data*4);
+        analogWrite(GpioVector[GpioIndex], data*4);
       }
-      //Serial.printf("%d:%d:%d; ",i,data,(data >= DigitalThreshold) ? HIGH : LOW);
+      //Serial.printf("%d:%d:%d; ",GpioIndex,data,(data > DigitalThreshold) ? HIGH : LOW);
     }//for loop
     //Serial.println("");
   }//! empty
 }// end void loop 
 
 
-
+/*
+ * InitGpio
+ */
+void InitGpio()
+{
+  //initialize GPIO pins
+  for(int i = 0; i < GpioVector.size(); ++i)  {
+    pinMode(GpioVector[i], OUTPUT);
+    digitalWrite(GpioVector[i], LOW);
+  }
+}
 
 /*
  * Loads the config from SPPS into the Config variable
@@ -255,11 +265,11 @@ void InitWeb()
   });
   server.on("/SetRelay", HTTP_GET, [](AsyncWebServerRequest *request){
     int relay = request->getParam("relay")->value().toInt();
-    if(relay<0 || relay >= MAX_CHANNELS) {
+    if(relay<0 || relay >= GpioVector.size()) {
       Serial.println("SetRelay - Index out of range");
       return;
     }
-    digitalWrite(channels[relay], (request->getParam("checked")->value() == "true") ? HIGH : LOW);
+    digitalWrite(GpioVector[relay], (request->getParam("checked")->value() == "true") ? HIGH : LOW);
     request->send(200);
   });
 
@@ -343,11 +353,11 @@ String WebReplace(const String& var)
   //Relay Page
   } else if (var == "RELAYS") {
     String Relays = "";
-    for(int i = 0; i < MAX_CHANNELS; ++i) {
-      Relays += "<label>Relay "+String(i+1)+"</label>";
+    for(int i = 0; i < GpioVector.size(); ++i) {
+      Relays += "<label>Relay "+String(i+1)+" ("+GpioVector[i]+")</label>";
       Relays += "  <label class=\"switch\">";
       Relays += "  <input type=\"checkbox\" ";
-      if(digitalRead(channels[i]) == HIGH) {
+      if(digitalRead(GpioVector[i]) == HIGH) {
         Relays += "checked";
       }
       Relays += " onclick=\"fetch('SetRelay?relay="+String(i)+"&checked='+this.checked);\">";
