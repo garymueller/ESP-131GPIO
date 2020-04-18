@@ -69,14 +69,16 @@ void loop() {
   while(!e131.isEmpty()) {
     e131.pull(&packet);     // Pull packet from ring buffer
     uint16_t num_channels = htons(packet.property_value_count) - 1;
-    for(int i = 0;i < MAX_CHANNELS && i < num_channels; ++i) {
+    for(int GpioIndex = 0, ChannelIndex = ChannelOffset;
+        GpioIndex < MAX_CHANNELS && ChannelIndex < num_channels; 
+        ++GpioIndex, ++ChannelIndex) {
       //seems odd that the array index is 1 based, not zero based ... but it works
-      uint16_t data = packet.property_values[ChannelOffset+i+1];
+      uint16_t data = packet.property_values[ChannelIndex+1];
       if(Digital) {
-        digitalWrite(channels[i], (data >= DigitalThreshold) ? HIGH : LOW);
+        digitalWrite(channels[GpioIndex], (data >= DigitalThreshold) ? HIGH : LOW);
       } else {
         //pwm board is 10 bit (1024), data is 256
-        analogWrite(channels[i], data*4);
+        analogWrite(channels[GpioIndex], data*4);
       }
       //Serial.printf("%d:%d:%d; ",i,data,(data >= DigitalThreshold) ? HIGH : LOW);
     }//for loop
