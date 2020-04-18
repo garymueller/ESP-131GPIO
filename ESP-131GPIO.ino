@@ -55,6 +55,9 @@ void setup() {
   Init131();
 
   InitWeb();
+
+  Serial.println("Completed setup. Starting loop");
+  Serial.println("==============================");
 }
 
 /*
@@ -222,8 +225,10 @@ void InitWifi()
 void Init131()
 {
   if(Config["E131"]["multicast"].as<bool>()) {
+    Serial.printf("Initializing Multicast with universe <%d>\n",Config["E131"]["universe"].as<int>());
     e131.begin(E131_MULTICAST, Config["E131"]["universe"]);
   } else {
+    Serial.println("Initializing Unicast");
     e131.begin(E131_UNICAST);
   }
 }
