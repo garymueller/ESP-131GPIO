@@ -25,6 +25,10 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 <img src="images/Relay.jpg" width="10%" height="10%">
 
+# Wiring
+
+<img src="images/GPIORelay-Wiring.jpg" width="10%" height="10%">
+
 # Build Environments
 
 [Arduino IDE](https://www.arduino.cc/en/main/software)
