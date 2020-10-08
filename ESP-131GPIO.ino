@@ -24,6 +24,8 @@ ESPAsyncE131 e131;
 //vector<int> GpioVector{16,5,4,14,12,13,0,2};
 //for Wemos D1 R2 pins are 16,5,4,0,2,14,12,13
 vector<int> GpioVector{16,5,4,0,2,14,12,13};
+int DigitalOn = HIGH;
+int DigitalOff = LOW;
 
 //Forward Declarations
 String WebReplace(const String& var);
@@ -44,10 +46,10 @@ void setup() {
   Serial.println("Start Setup");
 
   Serial.begin(115200);
-
-  InitGpio();
   
   LoadConfig();
+
+  InitGpio();
 
   InitWifi();
 
@@ -78,12 +80,12 @@ void loop() {
       
       uint16_t data = packet.property_values[ChannelIndex+1];
       if(Digital) {
-        digitalWrite(GpioVector[GpioIndex], (data >= DigitalThreshold) ? HIGH : LOW);
+        digitalWrite(GpioVector[GpioIndex], (data >= DigitalThreshold) ? DigitalOn : DigitalOff);
       } else {
         //pwm board is 10 bit (1024), data is 256
         analogWrite(GpioVector[GpioIndex], data*4);
       }
-      //Serial.printf("%d:%d:%d; ",GpioIndex,data,(data > DigitalThreshold) ? HIGH : LOW);
+      //Serial.printf("%d:%d:%d; ",GpioIndex,data,(data > DigitalThreshold) ? DigitalOn : DigitalOff);
     }//for loop
     //Serial.println("");
   }//! empty
@@ -98,7 +100,7 @@ void InitGpio()
   //initialize GPIO pins
   for(int i = 0; i < GpioVector.size(); ++i)  {
     pinMode(GpioVector[i], OUTPUT);
-    digitalWrite(GpioVector[i], LOW);
+    digitalWrite(GpioVector[i], DigitalOff);
   }
 }
 
@@ -131,10 +133,19 @@ bool LoadConfig()
 
     Config["GPIO"]["digital"] = "true";
     Config["GPIO"]["digital_threshold"] = 127;
+    Config["GPIO"]["digital_lowlevel"] = false;
     
   } else {
     Serial.println("Loading Configuration File");
     deserializeJson(Config, file);
+  }
+
+  if(Config["GPIO"]["digital_lowlevel"].as<bool>()) {
+    DigitalOn = LOW;
+    DigitalOff = HIGH;
+  } else {
+    DigitalOn = HIGH;
+    DigitalOff = LOW;
   }
 
   serializeJson(Config, Serial);Serial.println();
@@ -175,6 +186,8 @@ void SaveConfig(AsyncWebServerRequest* request)
   Config["GPIO"]["digital"] =
     (request->hasParam("digital",true) && (request->getParam("digital",true)->value() == "on"));
   Config["GPIO"]["digital_threshold"] = request->getParam("digital_threshold",true)->value();
+  Config["GPIO"]["digital_lowlevel"] =
+    (request->hasParam("digital_lowlevel",true) && (request->getParam("digital_lowlevel",true)->value() == "on"));
 
   File file = SPIFFS.open(CONFIG_FILE, "w");
   if(file) {
@@ -269,7 +282,7 @@ void InitWeb()
       Serial.println("SetRelay - Index out of range");
       return;
     }
-    digitalWrite(GpioVector[relay], (request->getParam("checked")->value() == "true") ? HIGH : LOW);
+    digitalWrite(GpioVector[relay], (request->getParam("checked")->value() == "true") ? DigitalOn : DigitalOff);
     request->send(200);
   });
 
@@ -349,7 +362,12 @@ String WebReplace(const String& var)
       return "";
   } else if (var == "CONFIG_THRESHOLD") {
     return Config["GPIO"]["digital_threshold"];
-  
+  } else if (var == "CONFIG_LOWLEVEL") {
+    if(Config["GPIO"]["digital_lowlevel"].as<bool>())
+      return "checked";
+     else
+      return "";
+
   //Relay Page
   } else if (var == "RELAYS") {
     String Relays = "";
@@ -357,7 +375,7 @@ String WebReplace(const String& var)
       Relays += "<label>Relay "+String(i+1)+" ("+GpioVector[i]+")</label>";
       Relays += "  <label class=\"switch\">";
       Relays += "  <input type=\"checkbox\" ";
-      if(digitalRead(GpioVector[i]) == HIGH) {
+      if(digitalRead(GpioVector[i]) == DigitalOn) {
         Relays += "checked";
       }
       Relays += " onclick=\"fetch('SetRelay?relay="+String(i)+"&checked='+this.checked);\">";

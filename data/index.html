@@ -211,6 +211,10 @@ input:checked + .slider:before {
       <input type="range" min="1" max="255" id="digital_threshold" name="digital_threshold" value="%CONFIG_THRESHOLD%" oninput="UpdateThreshold(value)">
       <output for="digital_threshold" id="thresholdvalue"></output>
 	  <br><br>
+
+	  <label>Low Level:</label>
+	  <input type="checkbox" id="digital_lowlevel" name="digital_lowlevel" %CONFIG_LOWLEVEL% title="Option will secify Low Level trigger relays">
+	  <br><br>
     </div>
     
     <input type="submit" value="Submit" >
