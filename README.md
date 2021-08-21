@@ -33,7 +33,7 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 [Arduino IDE](https://www.arduino.cc/en/main/software)
 
-[Arduino 8266](https://github.com/esp8266/Arduino)(2.74)
+[Arduino 8266 (2.74)](https://github.com/esp8266/Arduino/tree/2.7.4)
 
 [arduino-esp8266fs-plugin](https://github.com/esp8266/arduino-esp8266fs-plugin)
 
