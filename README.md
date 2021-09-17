@@ -35,7 +35,7 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 [Arduino 8266 (2.74)](https://github.com/esp8266/Arduino/tree/2.7.4)
 
-[arduino-esp8266fs-plugin](https://github.com/esp8266/arduino-esp8266fs-plugin)
+[arduino-esp8266littlefs-plugin](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases)
 
 # Libraries
 [Arduino WiFi](https://www.arduino.cc/en/Reference/WiFi)
@@ -56,7 +56,7 @@ Download and install the above build environments and libraries.  The build envi
 1. The Wemos requires you to jump pins D3 and GND to start the board into programming mode.  
 2. Plug the arduino into your computers USB. 
 3. Click the upload button to compile and transfer the firmware to the arduino. 
-4. Then select the "ESP8266 sketch data upload" found under the tools menu. This will upload the data directory (html) to the arduino.
+4. Then select the "ESP8266 LittleFS data upload" found under the tools menu. This will upload the data directory (html) to the arduino.
 
 # Web Interface
 

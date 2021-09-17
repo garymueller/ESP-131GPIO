@@ -4,7 +4,7 @@
 #include <ESPAsyncE131.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPAsyncDNSServer.h>
-#include <FS.h>
+#include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <vector>
 
@@ -109,13 +109,13 @@ void InitGpio()
  */
 bool LoadConfig()
 {
-  // Initialize SPIFFS
-  if(!SPIFFS.begin()){
-    Serial.println("An Error has occurred while mounting SPIFFS");
+  // Initialize LittleFS
+  if(!LittleFS.begin()){
+    Serial.println("An Error has occurred while mounting LittleFS");
     return false;
   }
 
-  File file = SPIFFS.open(CONFIG_FILE, "r");
+  File file = LittleFS.open(CONFIG_FILE, "r");
   if (!file) {
     //First Run, setup defaults
     Config["network"]["hostname"] = "esps-" + String(ESP.getChipId(), HEX);
@@ -189,7 +189,7 @@ void SaveConfig(AsyncWebServerRequest* request)
   Config["GPIO"]["digital_lowlevel"] =
     (request->hasParam("digital_lowlevel",true) && (request->getParam("digital_lowlevel",true)->value() == "on"));
 
-  File file = SPIFFS.open(CONFIG_FILE, "w");
+  File file = LittleFS.open(CONFIG_FILE, "w");
   if(file) {
     serializeJson(Config, file);
     serializeJson(Config, Serial);
@@ -264,14 +264,14 @@ void InitWeb()
 {
   //enables redirect to /index.html on AP connection
   server.onNotFound([](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/index.html", String(), false, WebReplace);
+    request->send(LittleFS, "/index.html", String(), false, WebReplace);
   });
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/index.html", String(), false, WebReplace);
+    request->send(LittleFS, "/index.html", String(), false, WebReplace);
   });
   server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/favicon.png", "image/png");
+    request->send(LittleFS, "/favicon.png", "image/png");
   });
   server.on("/SaveConfig", HTTP_POST, [](AsyncWebServerRequest *request){
     SaveConfig(request);
