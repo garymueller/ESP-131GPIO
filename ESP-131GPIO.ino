@@ -149,6 +149,7 @@ bool LoadConfig()
   }
 
   serializeJson(Config, Serial);Serial.println();
+  return true;
 }
 
 void SaveConfig(AsyncWebServerRequest* request)
