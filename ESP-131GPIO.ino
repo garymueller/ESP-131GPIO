@@ -42,10 +42,10 @@ void InitWeb();
  * Sets up the initial state and starts sockets
  */
 void setup() {
+  Serial.begin(115200);
+  delay(500);
   Serial.println("==============================");
   Serial.println("Start Setup");
-
-  Serial.begin(115200);
   
   LoadConfig();
 
