@@ -82,8 +82,7 @@ void loop() {
       if(Digital) {
         digitalWrite(GpioVector[GpioIndex], (data >= DigitalThreshold) ? DigitalOn : DigitalOff);
       } else {
-        //pwm board is 10 bit (1024), data is 256
-        analogWrite(GpioVector[GpioIndex], data*4);
+        analogWrite(GpioVector[GpioIndex], data);
       }
       //Serial.printf("%d:%d:%d; ",GpioIndex,data,(data > DigitalThreshold) ? DigitalOn : DigitalOff);
     }//for loop
