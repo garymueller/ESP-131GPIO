@@ -31,13 +31,19 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 # Build Environments
 
+There are 2 ways to build the software.  The first is to use the arduino ide and the second is to use platformio.  The required libraries for the arduino ide environment are listed below and must be installed in order to compile. The Platformio environment is a little easier to use as the libraries should automatically be downloaded and made available to the environment for you. 
+
 [Arduino IDE](https://www.arduino.cc/en/main/software)
 
 [Arduino 8266](https://github.com/esp8266/Arduino)
 
 [arduino-esp8266littlefs-plugin](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases)
 
-# Libraries
+or
+
+[Platformio](https://platformio.org/install)
+
+# Arduino IDE Libraries
 [Arduino WiFi](https://www.arduino.cc/en/Reference/WiFi)
 
 [Arduino JSON](https://arduinojson.org/)
