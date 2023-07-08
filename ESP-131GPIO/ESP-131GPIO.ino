@@ -1,5 +1,7 @@
 //https://github.com/garymueller/ESP-131GPIO
 
+#include <Arduino.h>
+
 #include <ESP8266WiFi.h>
 #include <ESPAsyncE131.h>
 #include <ESPAsyncWebServer.h>
