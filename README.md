@@ -48,6 +48,10 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 [ESPAsyncDNSServer](https://github.com/devyte/ESPAsyncDNSServer)
 
+[ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP)
+
+[ESPAsyncUDP](https://github.com/me-no-dev/ESPAsyncUDP)
+
 # Software Installation
 
 Download and install the above build environments and libraries.  The build environments can be installed by downloading and installing the appropriate software.  The libraries can be installed through the ide with manage libraries.
