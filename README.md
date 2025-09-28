@@ -31,7 +31,7 @@ This is arduino firmware that will listen to a E1.31 (sACN) data soure and will 
 
 # Build Environments
 
-There are 2 ways to build the software.  The first is to use the arduino ide and the second is to use platformio.  The required libraries for the arduino ide environment are listed below and must be installed in order to compile. The Platformio environment is a little easier to use as the libraries should automatically be downloaded and made available to the environment for you. 
+There are 2 ways to build the software.  The first is to use the arduino ide and the second is to use platformio.  The required libraries for the arduino ide environment are listed below and must be installed in order to compile. The Platformio environment is easier to use as the libraries should automatically be downloaded and made available to the environment for you. 
 
 [Arduino IDE](https://www.arduino.cc/en/main/software)
 
@@ -60,13 +60,21 @@ or
 
 # Software Installation
 
-Download and install the above build environments and libraries.  The build environments can be installed by downloading and installing the appropriate software.  The libraries can be installed through the ide with manage libraries.
+Download and install the above build environments and libraries.  The build environments can be installed by downloading and installing the appropriate software. 
+* **Arduino IDE** - The libraries can be installed through the ide with manage libraries.
 
 # Firmware Installion
 1. The Wemos requires you to jump pins D3 and GND to start the board into programming mode.  
 2. Plug the arduino into your computers USB. 
 3. Click the upload button to compile and transfer the firmware to the arduino. 
-4. Then select the "ESP8266 LittleFS data upload" found under the tools menu. This will upload the data directory (html) to the arduino.
+4. Upload data files
+   * **Arduino IDE**
+     - select the "ESP8266 LittleFS data upload" found under the tools menu. This will upload the data directory (html) to the arduino.
+   * **PlaformIO**
+     - Click the PlatformIO icon in the sidebar
+     - Expand the Platform menu.
+     - Select Build Filesystem Image.
+     - click Upload Filesystem Image.
 
 # Web Interface
 
